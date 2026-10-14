@@ -1,0 +1,6 @@
+```SOC Lab - Web Directory Scanning```
+```Paste into Splunk Search & Reporting, time range: Last 4 hours```
+index=soc_lab sourcetype=access_combined (status=404 OR status=403)
+| stats count AS errors dc(uri_path) AS unique_paths values(useragent) AS user_agents BY clientip
+| where errors >= 25 OR match(mvjoin(user_agents," "), "(?i)gobuster|dirbuster|nikto|ffuf|dirb")
+| eval severity="medium", mitre="T1595.003"

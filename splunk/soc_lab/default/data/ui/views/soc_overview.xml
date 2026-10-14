@@ -1,0 +1,103 @@
+<form version="1.1" theme="dark">
+  <label>SOC Lab Overview</label>
+  <description>Authentication and web activity on soc-lab-web01, with detections mapped to MITRE ATT&amp;CK</description>
+  <fieldset submitButton="false">
+    <input type="time" token="t">
+      <label>Time range</label>
+      <default>
+        <earliest>-4h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Failed SSH logins</title>
+      <single>
+        <search>
+          <query>index=soc_lab sourcetype=linux_secure action=failure | stats count</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[10,50]</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Successful SSH logins</title>
+      <single>
+        <search>
+          <query>index=soc_lab sourcetype=linux_secure action=success | stats count</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Web 4xx errors</title>
+      <single>
+        <search>
+          <query>index=soc_lab sourcetype=access_combined status&gt;=400 status&lt;500 | stats count</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+      </single>
+    </panel>
+    <panel>
+      <title>Triggered alerts</title>
+      <single>
+        <search>
+          <query>| rest /services/alerts/fired_alerts splunk_server=local | search title="SOC Lab*" | stats sum(triggered_alert_count) AS alerts</query>
+        </search>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>SSH logins over time</title>
+      <chart>
+        <search>
+          <query>index=soc_lab sourcetype=linux_secure (action=failure OR action=success) | timechart span=5m count BY action</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.stackMode">stacked</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Top source IPs by failed logins</title>
+      <table>
+        <search>
+          <query>index=soc_lab sourcetype=linux_secure action=failure | stats count AS failures dc(user) AS users_tried BY src_ip | sort - failures | head 10</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Suspicious web requests</title>
+      <table>
+        <search>
+          <query>index=soc_lab sourcetype=access_combined | eval decoded=urldecode(uri) | eval reason=case(match(decoded,"(?i)union\s+select|'\s*or\s*'1'|sleep\(|drop\s+table|'--"),"SQL injection (T1190)", match(useragent,"(?i)gobuster|nikto|ffuf|dirb"),"Directory scan (T1595.003)") | where isnotnull(reason) | stats count values(reason) AS reason latest(useragent) AS user_agent BY clientip | sort - count</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+      </table>
+    </panel>
+    <panel>
+      <title>Sudo commands</title>
+      <table>
+        <search>
+          <query>index=soc_lab sourcetype=linux_secure action=sudo | table _time sudo_user sudo_command | sort - _time</query>
+          <earliest>$t.earliest$</earliest>
+          <latest>$t.latest$</latest>
+        </search>
+      </table>
+    </panel>
+  </row>
+</form>

@@ -1,0 +1,7 @@
+```SOC Lab - Successful Login After Brute Force```
+```Paste into Splunk Search & Reporting, time range: Last 4 hours```
+index=soc_lab sourcetype=linux_secure (action=failure OR action=success)
+| stats count(eval(action="failure")) AS failures count(eval(action="success")) AS successes
+        latest(eval(if(action="success",user,null()))) AS compromised_user BY src_ip
+| where failures > 10 AND successes > 0
+| eval severity="critical", mitre="T1110,T1078"

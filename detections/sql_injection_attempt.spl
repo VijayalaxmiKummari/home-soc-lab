@@ -1,0 +1,7 @@
+```SOC Lab - SQL Injection Attempt```
+```Paste into Splunk Search & Reporting, time range: Last 4 hours```
+index=soc_lab sourcetype=access_combined
+| eval decoded=urldecode(uri)
+| where match(decoded, "(?i)union\s+select|'\s*or\s*'1'\s*=\s*'1|sleep\(|drop\s+table|'--")
+| table _time clientip status useragent decoded
+| eval severity="high", mitre="T1190"

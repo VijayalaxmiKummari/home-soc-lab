@@ -1,0 +1,6 @@
+```SOC Lab - SSH Brute Force```
+```Paste into Splunk Search & Reporting, time range: Last 4 hours```
+index=soc_lab sourcetype=linux_secure action=failure
+| stats count AS failures dc(user) AS users_tried values(user) AS usernames BY src_ip
+| where failures > 20
+| eval severity="high", mitre="T1110.001"

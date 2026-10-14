@@ -1,0 +1,12 @@
+# Copy this file to inputs.conf and change the two paths to where you cloned the repo.
+# Example on a Mac: /Users/<your-mac-username>/home-soc-lab/logs/auth.log
+
+[monitor:///CHANGE/ME/home-soc-lab/logs/auth.log]
+index = soc_lab
+sourcetype = linux_secure
+disabled = false
+
+[monitor:///CHANGE/ME/home-soc-lab/logs/access.log]
+index = soc_lab
+sourcetype = access_combined
+disabled = false

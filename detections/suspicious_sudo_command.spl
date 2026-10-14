@@ -1,0 +1,6 @@
+```SOC Lab - Suspicious Sudo Command```
+```Paste into Splunk Search & Reporting, time range: Last 4 hours```
+index=soc_lab sourcetype=linux_secure action=sudo
+| where match(sudo_command, "(?i)/etc/shadow|/etc/passwd|wget |curl |nc |chmod \+s")
+| table _time host sudo_user sudo_command
+| eval severity="high", mitre="T1548.003"
