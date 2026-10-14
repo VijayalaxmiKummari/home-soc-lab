@@ -80,3 +80,13 @@ The most interesting finding is a full attack chain from one IP: 45 failed login
 Splunk Enterprise (free licence), Python 3, SPL, MITRE ATT&CK, macOS
 
 All IP addresses used for attackers come from the reserved documentation ranges (RFC 5737), so none of them belong to real systems.
+
+## Screenshots
+
+| SSH brute force detection | SQL injection detection |
+|---|---|
+| ![Brute force](screenshots/brute-force-detection.png) | ![SQL injection](screenshots/sql-injection-detection.png) |
+
+| All six detections firing | Incident timeline (IR-001) |
+|---|---|
+| ![Triggered alerts](screenshots/triggered-alerts.png) | ![Timeline](screenshots/incident-timeline.png) |
